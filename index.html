@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d2a20">
 <title>My Fishing States</title>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
 <style>
 :root{--green:#0d2a20;--green2:#164b2e;--green3:#6f9f43;--gold:#d6aa35;--cream:#f4f0e6;--panel:#fffdf8;--ink:#183027;--muted:#66736c;--line:#d9ddd6;--gray:#c9cdca;--shadow:0 5px 18px rgba(0,0,0,.08)}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
@@ -19,13 +21,14 @@ main{max-width:1020px;margin:auto;padding:14px}.card{background:var(--panel);bor
 #map{height:500px;border-radius:14px;overflow:hidden;background:#ede9df}.legend{display:flex;gap:13px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding-top:10px}.legend span{display:flex;align-items:center;gap:5px}.swatch{width:13px;height:13px;border-radius:3px;border:1px solid #aaa}
 .stateQuick{background:linear-gradient(145deg,#0d2a20,#123c2f);color:white;border-radius:15px;padding:14px;margin-top:12px}.stateQuick .title{font-size:20px;color:var(--gold);font-weight:900}.quickStats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}.quickStat{background:rgba(255,255,255,.07);border-radius:10px;padding:9px;text-align:center}.quickStat b{display:block;font-size:18px}.quickStat span{font-size:11px;color:#d6ddd9}.goldBtn{background:var(--gold);color:#172019;border:0;border-radius:10px;padding:10px 13px;font-weight:900}
 input,select,textarea{width:100%;padding:11px;border:1px solid #d5dbd5;border-radius:10px;background:white;font-size:16px;margin:5px 0 11px}textarea{min-height:110px;resize:vertical}
-.primary{background:var(--green);color:#fff;border:0;border-radius:10px;padding:11px 15px;font-weight:800}.secondary{background:#eef1ec;border:0;border-radius:10px;padding:10px 13px}.danger{background:none;border:0;color:#a33;padding:7px 0}
+.primary{background:var(--green);color:#fff;border:0;border-radius:10px;padding:11px 15px;font-weight:800}.secondary{background:#eef1ec;border:0;border-radius:10px;padding:10px 13px}.editBtn{background:#d6aa35;color:#172019;border:0;border-radius:9px;padding:7px 10px;font-weight:800}.danger{background:none;border:0;color:#a33;padding:7px 0}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.statebtn{width:100%;background:white;border:1px solid var(--line);border-radius:11px;padding:11px;text-align:left}.statebtn.fished{background:#e0eadb;border-color:#9bb48d}
-.entry{border-top:1px solid #ddd;padding:13px 0}.entry:first-child{border-top:0}.entryTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.pill{display:inline-block;background:#e8eee8;border-radius:20px;padding:4px 8px;font-size:11px}.small{font-size:12px;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:22px}.hidden{display:none}.success{background:#e5f0e8;padding:10px;border-radius:10px;margin-top:10px}.warning{background:#f8e9e9;padding:10px;border-radius:10px;margin-top:10px}
+.entry{border-top:1px solid #ddd;padding:13px 0}.entry:first-child{border-top:0}.entryTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.pill{display:inline-block;background:#e8eee8;border-radius:20px;padding:4px 8px;font-size:11px}.small{font-size:12px;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:22px}.hidden{display:none}.success{background:#e5f0e8;padding:10px;border-radius:10px;margin-top:10px}.warning{background:#f8e9e9;padding:10px;border-radius:10px;margin-top:10px}.actions{display:flex;gap:12px;align-items:center;margin-top:7px}
 .tableWrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 7px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}th{font-size:11px;color:#4f5d56;text-transform:uppercase;letter-spacing:.3px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
+
 <body>
 <header>
 <div class="brand">
@@ -46,6 +49,7 @@ input,select,textarea{width:100%;padding:11px;border:1px solid #d5dbd5;border-ra
 <button class="tab" data-page="backup">Backup</button>
 </nav>
 </header>
+
 <main>
 <section id="home">
 <div class="card"><div class="stats">
@@ -76,7 +80,8 @@ input,select,textarea{width:100%;padding:11px;border:1px solid #d5dbd5;border-ra
 </section>
 
 <section id="add" class="hidden">
-<div class="card"><h2>Log a Fishing Day</h2>
+<div class="card">
+<h2 id="formTitle">Log a Fishing Day</h2>
 <form id="dayForm">
 <label>State *</label><select id="state" required></select>
 <label>Date *</label><input id="date" type="date" required>
@@ -84,7 +89,8 @@ input,select,textarea{width:100%;padding:11px;border:1px solid #d5dbd5;border-ra
 <label>Water / location</label><input id="water" placeholder="Lake, river, stream, etc.">
 <label>Largest fish — length</label><input id="largest" type="number" min="0" step="0.1" placeholder="18.5"><div class="small">Length in inches.</div>
 <label>Notes</label><textarea id="notes" placeholder="Weather, conditions, memorable catches, lure, guide, who you fished with, etc."></textarea>
-<button class="primary" type="submit">Save Fishing Day</button>
+<button class="primary" id="saveEntryBtn" type="submit">Save Fishing Day</button>
+<button class="secondary hidden" id="cancelEditBtn" type="button">Cancel Edit</button>
 </form>
 </div>
 </section>
@@ -116,33 +122,9 @@ input,select,textarea{width:100%;padding:11px;border:1px solid #d5dbd5;border-ra
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const STATES=["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
-let entries=[],selectedState=null,map=null,stateLayer=null;
+let entries=[],selectedState=null,map=null,stateLayer=null,editingId=null;
 try{entries=JSON.parse(localStorage.getItem("mfs_daily_entries")||"[]")}catch(e){entries=[]}
-
-if(!entries.length){
-  try{
-    const old=JSON.parse(localStorage.getItem("fishingCatches")||"[]");
-    if(Array.isArray(old)&&old.length){
-      const grouped={};
-      old.forEach(c=>{
-        const state=c.state||"";
-        const date=c.date||new Date().toISOString().slice(0,10);
-        if(!state)return;
-        const key=state+"|"+date+"|"+(c.water||"");
-        if(!grouped[key]) grouped[key]={id:String(Date.now()+Math.random()),state,date,count:0,water:c.water||"",largest:0,notes:""};
-        grouped[key].count+=1;
-        const len=parseFloat(c.length);
-        if(!isNaN(len))grouped[key].largest=Math.max(grouped[key].largest,len);
-        if(c.notes)grouped[key].notes+=(grouped[key].notes?" | ":"")+c.notes;
-      });
-      entries=Object.values(grouped);
-      localStorage.setItem("mfs_daily_entries",JSON.stringify(entries));
-    }
-  }catch(e){}
-}
-
-const $=id=>document.getElementById(id);
-const save=()=>localStorage.setItem("mfs_daily_entries",JSON.stringify(entries));
+const $=id=>document.getElementById(id),save=()=>localStorage.setItem("mfs_daily_entries",JSON.stringify(entries));
 function esc(v){return String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function show(page){
   document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
@@ -151,15 +133,41 @@ function show(page){
   if(page==="add")fillStates();
   if(page==="home"&&map)setTimeout(()=>map.invalidateSize(),100);
 }
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>show(b.dataset.page));
-$("addLog").onclick=()=>show("add");
-$("addStateDay").onclick=()=>{show("add");fillStates();$("state").value=selectedState||""};
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{cancelEdit();show(b.dataset.page)});
+$("addLog").onclick=()=>{cancelEdit();show("add")};
+$("addStateDay").onclick=()=>{cancelEdit();show("add");fillStates();$("state").value=selectedState||""};
 $("back").onclick=()=>{selectedState=null;$("mapPanel").innerHTML="";show("home");render()};
+$("cancelEditBtn").onclick=()=>{cancelEdit();show(selectedState?"stateDetail":"log");if(selectedState)viewStateLog()};
 
 function fillStates(){
   $("state").innerHTML='<option value="">Choose a state...</option>'+STATES.map(s=>`<option>${s}</option>`).join("");
-  if(selectedState)$("state").value=selectedState;
+  if(selectedState&&!editingId)$("state").value=selectedState;
   if(!$("date").value)$("date").value=new Date().toISOString().slice(0,10);
+}
+function cancelEdit(){
+  editingId=null;
+  $("formTitle").textContent="Log a Fishing Day";
+  $("saveEntryBtn").textContent="Save Fishing Day";
+  $("cancelEditBtn").classList.add("hidden");
+  $("dayForm").reset();
+  $("date").value=new Date().toISOString().slice(0,10);
+}
+function editEntry(id){
+  const e=entries.find(x=>x.id===id);
+  if(!e)return;
+  editingId=id;
+  selectedState=e.state;
+  show("add");
+  fillStates();
+  $("formTitle").textContent="Edit Fishing Day";
+  $("saveEntryBtn").textContent="Save Changes";
+  $("cancelEditBtn").classList.remove("hidden");
+  $("state").value=e.state;
+  $("date").value=e.date||"";
+  $("count").value=e.count??0;
+  $("water").value=e.water||"";
+  $("largest").value=e.largest||"";
+  $("notes").value=e.notes||"";
 }
 function totalFish(){return entries.reduce((a,e)=>a+Number(e.count||0),0)}
 function ytdFish(){const y=new Date().getFullYear();return entries.filter(e=>e.date&&new Date(e.date+"T12:00:00").getFullYear()===y).reduce((a,e)=>a+Number(e.count||0),0)}
@@ -167,20 +175,13 @@ function fishedStates(){return new Set(entries.map(e=>e.state))}
 function stateEntriesFor(s){return entries.filter(e=>e.state===s).sort((a,b)=>b.date.localeCompare(a.date))}
 function stateTotal(s){return stateEntriesFor(s).reduce((a,e)=>a+Number(e.count||0),0)}
 function stateLargest(s){return stateEntriesFor(s).reduce((m,e)=>Math.max(m,Number(e.largest||0)),0)}
-function stateColor(s){
-  if(s===selectedState)return "#d6aa35";
-  const days=stateEntriesFor(s).length;
-  if(days>=5)return "#164b2e";
-  if(days>0)return "#6f9f43";
-  return "#c9cdca";
-}
+function stateColor(s){if(s===selectedState)return "#d6aa35";const days=stateEntriesFor(s).length;if(days>=5)return "#164b2e";if(days>0)return "#6f9f43";return "#c9cdca"}
 
 function setupMap(){
   map=L.map("map",{zoomControl:true,scrollWheelZoom:false,attributionControl:false}).setView([39.5,-98.5],4);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{opacity:.08,maxZoom:18}).addTo(map);
   fetch("https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json")
-    .then(r=>r.json())
-    .then(data=>{
+    .then(r=>r.json()).then(data=>{
       stateLayer=L.geoJSON(data,{
         style:f=>({color:"#fff",weight:1.3,fillColor:stateColor(f.properties.name),fillOpacity:.92}),
         onEachFeature:(f,l)=>{l.bindTooltip(f.properties.name,{sticky:true});l.on("click",()=>openState(f.properties.name))}
@@ -189,18 +190,13 @@ function setupMap(){
     })
     .catch(()=>{$("map").innerHTML="<div style='padding:22px;text-align:center;color:#66736c'>The state map needs an internet connection to load.</div>"});
 }
-function refreshMap(){if(!stateLayer)return;stateLayer.eachLayer(l=>l.setStyle({fillColor:stateColor(l.feature.properties.name)}))}
+function refreshMap(){if(stateLayer)stateLayer.eachLayer(l=>l.setStyle({fillColor:stateColor(l.feature.properties.name)}))}
 function openState(s){
   selectedState=s;show("home");
   const es=stateEntriesFor(s),last=es[0]?.date||"";
   $("mapPanel").innerHTML=`<div class="stateQuick"><div class="title">${esc(s)}</div>
-  <div class="quickStats">
-    <div class="quickStat"><b>${stateTotal(s)}</b><span>Fish Caught</span></div>
-    <div class="quickStat"><b>${es.length}</b><span>Fishing Days</span></div>
-    <div class="quickStat"><b>${stateLargest(s)||0}${stateLargest(s)?" in":""}</b><span>Largest Fish</span></div>
-  </div>
-  <div class="small" style="color:#d7ded9">${last?`Last fished: ${esc(last)}`:"No fishing days logged yet."}</div><br>
-  <button class="goldBtn" onclick="viewStateLog()">VIEW STATE LOG →</button></div>`;
+  <div class="quickStats"><div class="quickStat"><b>${stateTotal(s)}</b><span>Fish Caught</span></div><div class="quickStat"><b>${es.length}</b><span>Fishing Days</span></div><div class="quickStat"><b>${stateLargest(s)||0}${stateLargest(s)?" in":""}</b><span>Largest Fish</span></div></div>
+  <div class="small" style="color:#d7ded9">${last?`Last fished: ${esc(last)}`:"No fishing days logged yet."}</div><br><button class="goldBtn" onclick="viewStateLog()">VIEW STATE LOG →</button></div>`;
   refreshMap();
 }
 function viewStateLog(){
@@ -208,17 +204,14 @@ function viewStateLog(){
   show("stateDetail");
   $("detailTitle").textContent="🎣 "+selectedState;
   const es=stateEntriesFor(selectedState);
-  $("stateSummary").innerHTML=`<div class="stats">
-    <div class="stat"><div class="num">${stateTotal(selectedState)}</div><div class="label">Fish Caught</div></div>
-    <div class="stat"><div class="num">${es.length}</div><div class="label">Fishing Days</div></div>
-    <div class="stat"><div class="num">${stateLargest(selectedState)||0}${stateLargest(selectedState)?" in":""}</div><div class="label">Largest Fish</div></div>
-  </div>`;
+  $("stateSummary").innerHTML=`<div class="stats"><div class="stat"><div class="num">${stateTotal(selectedState)}</div><div class="label">Fish Caught</div></div><div class="stat"><div class="num">${es.length}</div><div class="label">Fishing Days</div></div><div class="stat"><div class="num">${stateLargest(selectedState)||0}${stateLargest(selectedState)?" in":""}</div><div class="label">Largest Fish</div></div></div>`;
   $("stateEntries").innerHTML=es.length?`<div class="tableWrap"><table><thead><tr><th>Date</th><th># Fish</th><th>Water / Location</th><th>Largest</th><th>Notes</th><th></th></tr></thead><tbody>${es.map(e=>`
-    <tr><td>${esc(e.date)}</td><td>${Number(e.count||0)}</td><td>${esc(e.water||"—")}</td><td>${e.largest?esc(e.largest)+" in":"—"}</td><td>${esc(e.notes||"")}</td><td><button class="danger" onclick="deleteEntry('${e.id}')">Delete</button></td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No fishing days logged yet.</div>";
+  <tr><td>${esc(e.date)}</td><td>${Number(e.count||0)}</td><td>${esc(e.water||"—")}</td><td>${e.largest?esc(e.largest)+" in":"—"}</td><td>${esc(e.notes||"")}</td><td><button class="editBtn" onclick="editEntry('${e.id}')">Edit</button><br><button class="danger" onclick="deleteEntry('${e.id}')">Delete</button></td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No fishing days logged yet.</div>";
 }
 function entryHTML(e){
   return `<div class="entry"><div class="entryTop"><div><b>${esc(e.state)}</b><div class="small">${esc(e.date)}</div></div><span class="pill">${Number(e.count||0)} fish</span></div>
-  <div><b>Water:</b> ${esc(e.water||"—")}</div><div><b>Largest:</b> ${e.largest?esc(e.largest)+" in":"—"}</div>${e.notes?`<div><b>Notes:</b> ${esc(e.notes)}</div>`:""}<button class="danger" onclick="deleteEntry('${e.id}')">Delete</button></div>`;
+  <div><b>Water:</b> ${esc(e.water||"—")}</div><div><b>Largest:</b> ${e.largest?esc(e.largest)+" in":"—"}</div>${e.notes?`<div><b>Notes:</b> ${esc(e.notes)}</div>`:""}
+  <div class="actions"><button class="editBtn" onclick="editEntry('${e.id}')">Edit</button><button class="danger" onclick="deleteEntry('${e.id}')">Delete</button></div></div>`;
 }
 function render(){
   const f=fishedStates();
@@ -233,9 +226,19 @@ function render(){
 $("stateSearch").oninput=render;$("logSearch").oninput=render;
 $("dayForm").onsubmit=e=>{
   e.preventDefault();
-  const x={id:String(Date.now()+Math.random()),state:$("state").value,date:$("date").value,count:Number($("count").value||0),water:$("water").value.trim(),largest:Number($("largest").value||0),notes:$("notes").value.trim()};
+  const x={id:editingId||String(Date.now()+Math.random()),state:$("state").value,date:$("date").value,count:Number($("count").value||0),water:$("water").value.trim(),largest:Number($("largest").value||0),notes:$("notes").value.trim()};
   if(!x.state||!x.date)return;
-  entries.push(x);save();selectedState=x.state;e.target.reset();$("date").value=new Date().toISOString().slice(0,10);openState(selectedState);render();
+  if(editingId){
+    const i=entries.findIndex(e=>e.id===editingId);
+    if(i>=0)entries[i]=x;
+  }else{
+    entries.push(x);
+  }
+  save();
+  selectedState=x.state;
+  cancelEdit();
+  viewStateLog();
+  render();
 };
 function deleteEntry(id){
   if(!confirm("Delete this fishing day?"))return;
@@ -244,7 +247,7 @@ function deleteEntry(id){
   render();
 }
 $("exportBtn").onclick=()=>{
-  const data={app:"My Fishing States",version:5,exported:new Date().toISOString(),entries};
+  const data={app:"My Fishing States",version:6,exported:new Date().toISOString(),entries};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");
   a.href=URL.createObjectURL(blob);a.download="my-fishing-states-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   $("backupStatus").innerHTML="<div class='success'>Backup created. Save the file somewhere safe.</div>";
