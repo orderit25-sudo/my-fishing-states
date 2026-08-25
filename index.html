@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Fishing States</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f1e8;color:#193027;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+header{background:#123c2f;color:white;padding:18px 15px 10px;
+position:sticky;top:0;z-index:1000}
+h1{margin:0;font-size:25px}
+.subtitle{font-size:13px;opacity:.8;margin-top:3px}
+nav{display:flex;gap:6px;margin-top:14px}
+nav button{flex:1;border:0;border-radius:10px;padding:10px;
+font-weight:700;background:#ffffff20;color:white}
+nav button.active{background:#d5a84b;color:#172019}
+main{max-width:1000px;margin:auto;padding:14px}
+.card{background:#fffdf8;border:1px solid #d9ddd7;border-radius:17px;
+padding:15px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{text-align:center;background:#edf1eb;border-radius:12px;padding:10px}
+.number{font-size:24px;font-weight:800;color:#123c2f}
+.small{font-size:12px;color:#68746e}
+#map{height:500px;border-radius:13px;overflow:hidden}
+input,select,textarea{width:100%;padding:11px;border:1px solid #d5dbd5;
+border-radius:10px;background:white;font-size:16px;margin:5px 0 11px}
+textarea{min-height:120px}
+button.primary{background:#123c2f;color:white;border:0;border-radius:10px;
+padding:11px 16px;font-weight:700}
+button.secondary{border:0;border-radius:10px;padding:10px 14px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.statebtn{background:white;border:1px solid #d8ddd7;border-radius:10px;
+padding:11px;text-align:left}
+.statebtn.fished{background:#dcebe2;border-color:#91b19d}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.catch{border-top:1px solid #ddd;padding:12px 0}
+.catch:first-child{border-top:0}
+.danger{background:none;border:0;color:#a33;padding:6px 0}
+.note{background:#f0f4ed;border-radius:13px;padding:13px;margin:12px 0}
+.hidden{display:none}
+.leaflet-popup-content button{background:#123c2f;color:white;border:0;
+padding:7px 10px;border-radius:7px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🎣 My Fishing States</h1>
+<div class="subtitle">Track every state, catch and fishing memory</div>
+
+<nav>
+<button class="tab active" data-page="home">Map</button>
+<button class="tab" data-page="log">Catch Log</button>
+<button class="tab" data-page="add">+ Add Catch</button>
+</nav>
+</header>
+
+<main>
+
+<section id="home">
+
+<div class="card">
+<div class="stats">
+<div class="stat">
+<div class="number" id="stateCount">0</div>
+<div class="small">States Fished</div>
+</div>
+<div class="stat">
+<div class="number" id="fishCount">0</div>
+<div class="small">Fish Caught</div>
+</div>
+<div class="stat">
+<div class="number" id="speciesCount">0</div>
+<div class="small">Species</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="row">
+<h2>Where I've Fished</h2>
+<span class="small">Tap a state</span>
+</div>
+<div id="map"></div>
+</div>
+
+<div class="card">
+<input id="stateSearch" placeholder="Search states...">
+<div id="stateGrid" class="grid"></div>
+</div>
+
+</section>
+
+
+<section id="log" class="hidden">
+
+<div class="card">
+
+<div class="row">
+<h2>Catch Log</h2>
+<button class="primary" id="addLog">+ Add Catch</button>
+</div>
+
+<input id="logSearch" placeholder="Search catches...">
+
+<div id="logList"></div>
+
+</div>
+
+</section>
+
+
+<section id="add" class="hidden">
+
+<div class="card">
+
+<h2>Log a Catch</h2>
+
+<form id="catchForm">
+
+<label>State *</label>
+<select id="state" required></select>
+
+<label>Fish species *</label>
+<input id="species" required placeholder="Smallmouth Bass">
+
+<label>Date</label>
+<input id="date" type="date">
+
+<label>Water / location</label>
+<input id="water" placeholder="Lake, river, stream...">
+
+<label>Method / lure</label>
+<input id="method" placeholder="Fly, spinnerbait, live bait...">
+
+<label>Length</label>
+<input id="length" placeholder="18 in">
+
+<label>Weight</label>
+<input id="weight" placeholder="3.2 lb">
+
+<label>Catch notes</label>
+<textarea id="catchNotes"
+placeholder="Weather, memorable details, guide, etc."></textarea>
+
+<button class="primary" type="submit">Save Catch</button>
+
+</form>
+
+</div>
+
+</section>
+
+
+<section id="detail" class="hidden">
+
+<div class="card">
+
+<button class="secondary" id="back">← Back to Map</button>
+
+<h2 id="detailTitle"></h2>
+
+<div class="note">
+
+<h3>State Notes</h3>
+
+<div class="small">
+Favorite lakes, rivers, guides, memorable trips,
+future plans, fish stories, or anything else.
+</div>
+
+<textarea id="stateNotes"
+placeholder="Write your notes about fishing in this state..."></textarea>
+
+<button class="primary" id="saveNotes">
+Save State Notes
+</button>
+
+</div>
+
+<h3>Catches in This State</h3>
+
+<div id="detailCatches"></div>
+
+<button class="primary" id="addHere">
++ Add Catch Here
+</button>
+
+</div>
+
+</section>
+
+</main>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+const STATES=[
+"Alabama","Alaska","Arizona","Arkansas","California","Colorado",
+"Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho",
+"Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana",
+"Maine","Maryland","Massachusetts","Michigan","Minnesota",
+"Mississippi","Missouri","Montana","Nebraska","Nevada",
+"New Hampshire","New Jersey","New Mexico","New York",
+"North Carolina","North Dakota","Ohio","Oklahoma","Oregon",
+"Pennsylvania","Rhode Island","South Carolina","South Dakota",
+"Tennessee","Texas","Utah","Vermont","Virginia","Washington",
+"West Virginia","Wisconsin","Wyoming"
+];
+
+let catches=[];
+let notes={};
+let selectedState=null;
+let map=null;
+let stateLayer=null;
+
+try{
+catches=JSON.parse(localStorage.getItem("fishingCatches")||"[]");
+notes=JSON.parse(localStorage.getItem("fishingNotes")||"{}");
+}catch(e){}
+
+const $=id=>document.getElementById(id);
+
+function save(){
+localStorage.setItem("fishingCatches",JSON.stringify(catches));
+localStorage.setItem("fishingNotes",JSON.stringify(notes));
+}
+
+function show(page){
+
+document.querySelectorAll("main>section")
+.forEach(x=>x.classList.add("hidden"));
+
+$(page).classList.remove("hidden");
+
+document.querySelectorAll(".tab")
+.forEach(x=>x.classList.toggle(
+"active",x.dataset.page===page));
+
+if(page==="add")fillStates();
+
+if(page==="home" && map){
+setTimeout(()=>map.invalidateSize(),100);
+}
+
+}
+
+document.querySelectorAll(".tab")
+.forEach(button=>{
+button.onclick=()=>show(button.dataset.page);
+});
+
+$("addLog").onclick=()=>show("add");
+$("addHere").onclick=()=>show("add");
+
+$("back").onclick=()=>{
+selectedState=null;
+show("home");
+render();
+};
+
+
+function fillStates(){
+
+$("state").innerHTML=
+'<option value="">Choose a state...</option>'+
+STATES.map(s=>`<option>${s}</option>`).join("");
+
+if(selectedState)
+$("state").value=selectedState;
+
+if(!$("date").value)
+$("date").value=new Date().toISOString().slice(0,10);
+
+}
+
+
+function stateColor(name){
+
+if(selectedState===name)
+return "#d5a84b";
+
+if(catches.some(c=>c.state===name))
+return "#2e7657";
+
+return "#c8ced0";
+
+}
+
+
+function setupMap(){
+
+map=L.map("map",{
+zoomControl:true,
+scrollWheelZoom:true
+}).setView([39.5,-98.5],4);
+
+L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+attribution:"© OpenStreetMap contributors",
+maxZoom:18
+}
+).addTo(map);
+
+fetch(
+"https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json"
+)
+.then(r=>r.json())
+.then(data=>{
+
+stateLayer=L.geoJSON(data,{
+style:feature=>({
+color:"#ffffff",
+weight:1,
+fillColor:stateColor(feature.properties.name),
+fillOpacity:.85
+}),
+
+onEachFeature:(feature,layer)=>{
+
+const name=feature.properties.name;
+
+layer.bindTooltip(name);
+
+layer.on("click",()=>{
+openState(name);
+});
+
+}
+
+}).addTo(map);
+
+})
+.catch(()=>{
+
+document.getElementById("map").innerHTML=
+"<div style='padding:20px;text-align:center'>"+
+"<b>Map could not load.</b><br>"+
+"Please make sure the app has an internet connection."+
+"</div>";
+
+});
+
+}
+
+
+function refreshMap(){
+
+if(!stateLayer)return;
+
+stateLayer.eachLayer(layer=>{
+
+const name=layer.feature.properties.name;
+
+layer.setStyle({
+fillColor:stateColor(name)
+});
+
+});
+
+}
+
+
+function openState(name){
+
+selectedState=name;
+
+$("detailTitle").textContent="🎣 "+name;
+
+$("stateNotes").value=notes[name]||"";
+
+const list=catches.filter(c=>c.state===name);
+
+$("detailCatches").innerHTML=
+list.length
+?list.map(catchHTML).join("")
+:"<p class='small'>No catches logged in this state yet.</p>";
+
+show("detail");
+
+refreshMap();
+
+}
+
+
+function catchHTML(c){
+
+return `
+<div class="catch">
+
+<b>${escapeHTML(c.species)}</b>
+
+<div class="small">
+${escapeHTML(c.date||"No date")}
+</div>
+
+<div class="small">
+${[
+c.water,
+c.method,
+c.length,
+c.weight
+].filter(Boolean).map(escapeHTML).join(" • ")}
+</div>
+
+${c.notes
+?`<div>${escapeHTML(c.notes)}</div>`
+:""}
+
+<button class="danger"
+onclick="deleteCatch('${c.id}')">
+Delete
+</button>
+
+</div>`;
+
+}
+
+
+function escapeHTML(value){
+
+return String(value||"")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;");
+
+}
+
+
+function render(){
+
+const fished=new Set(catches.map(c=>c.state));
+
+$("stateCount").textContent=fished.size;
+$("fishCount").textContent=catches.length;
+
+$("speciesCount").textContent=
+new Set(catches.map(c=>
+c.species.toLowerCase())).size;
+
+
+const q=$("stateSearch").value.toLowerCase();
+
+$("stateGrid").innerHTML=
+STATES
+.filter(s=>s.toLowerCase().includes(q))
+.map(s=>`
+
+<button class="statebtn ${fished.has(s)?"fished":""}"
+onclick='openState(${JSON.stringify(s)})'>
+
+<b>${s}</b>
+
+<br>
+
+<span class="small">
+${catches.filter(c=>c.state===s).length}
+catches
+${notes[s]?" • notes saved":""}
+</span>
+
+</button>
+
+`).join("");
+
+
+const search=$("logSearch").value.toLowerCase();
+
+const list=catches.filter(c=>
+Object.values(c).join(" ")
+.toLowerCase()
+.includes(search)
+);
+
+$("logList").innerHTML=
+list.length
+?list.map(catchHTML).join("")
+:"<p class='small'>No catches logged yet.</p>";
+
+refreshMap();
+
+}
+
+
+$("stateSearch").oninput=render;
+$("logSearch").oninput=render;
+
+
+$("saveNotes").onclick=()=>{
+
+if(!selectedState)return;
+
+notes[selectedState]=$("stateNotes").value;
+
+save();
+render();
+
+alert("State notes saved.");
+
+};
+
+
+function deleteCatch(id){
+
+if(!confirm("Delete this catch?"))return;
+
+catches=catches.filter(c=>c.id!==id);
+
+save();
+
+if(selectedState)
+openState(selectedState);
+else
+render();
+
+}
+
+
+$("catchForm").onsubmit=e=>{
+
+e.preventDefault();
+
+const c={
+id:String(Date.now())+Math.random(),
+state:$("state").value,
+species:$("species").value.trim(),
+date:$("date").value,
+water:$("water").value.trim(),
+method:$("method").value.trim(),
+length:$("length").value.trim(),
+weight:$("weight").value.trim(),
+notes:$("catchNotes").value.trim()
+};
+
+if(!c.state||!c.species)return;
+
+catches.push(c);
+
+save();
+
+selectedState=c.state;
+
+e.target.reset();
+
+openState(selectedState);
+
+};
+
+
+fillStates();
+setupMap();
+render();
+
+</script>
+
+</body>
+</html>
