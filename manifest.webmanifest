@@ -1,0 +1,20 @@
+{
+  "name": "My Fishing States",
+  "short_name": "Fishing States",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d2a20",
+  "theme_color": "#0d2a20",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./app-logo.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ]
+}

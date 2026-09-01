@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d2a20">
+<title>My Fishing States</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+:root{--green:#0d2a20;--green2:#164b2e;--green3:#6f9f43;--gold:#d6aa35;--cream:#f4f0e6;--panel:#fffdf8;--ink:#183027;--muted:#66736c;--line:#d9ddd6;--gray:#c9cdca;--shadow:0 5px 18px rgba(0,0,0,.08)}
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+header{position:sticky;top:0;z-index:1000;background:linear-gradient(180deg,#102f25 0%,#0b221b 100%);color:white;padding:14px 14px 10px;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.brand{display:flex;align-items:center;gap:10px}.brand svg{width:48px;height:48px;flex:none}.brandTitle{font-weight:900;letter-spacing:.5px;font-size:22px}.brandSub{font-size:12px;color:#d5b66e;margin-top:2px}
+nav{display:flex;gap:6px;margin-top:12px;overflow:auto}nav button{flex:1;min-width:72px;border:0;border-radius:10px;padding:9px 7px;background:rgba(255,255,255,.08);color:white;font-weight:750}nav button.active{background:var(--gold);color:#172019}
+main{max-width:1020px;margin:auto;padding:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:14px;box-shadow:var(--shadow)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.stat{text-align:center;background:#edf1eb;border-radius:13px;padding:11px 7px}.num{font-size:24px;font-weight:900;color:var(--green)}.label{font-size:11px;color:var(--muted);margin-top:2px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}h2{margin:2px 0 12px;font-size:21px}h3{margin:15px 0 8px}
+#map{height:300px;border-radius:14px;overflow:hidden;background:#ede9df}.legend{display:flex;gap:13px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding-top:10px}.legend span{display:flex;align-items:center;gap:5px}.swatch{width:13px;height:13px;border-radius:3px;border:1px solid #aaa}
+.stateQuick{background:linear-gradient(145deg,#0d2a20,#123c2f);color:white;border-radius:15px;padding:14px;margin-top:12px}.stateQuick .title{font-size:20px;color:var(--gold);font-weight:900}.quickStats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}.quickStat{background:rgba(255,255,255,.07);border-radius:10px;padding:9px;text-align:center}.quickStat b{display:block;font-size:18px}.quickStat span{font-size:11px;color:#d6ddd9}.goldBtn{background:var(--gold);color:#172019;border:0;border-radius:10px;padding:10px 13px;font-weight:900}
+input,select,textarea{width:100%;padding:11px;border:1px solid #d5dbd5;border-radius:10px;background:white;font-size:16px;margin:5px 0 11px}textarea{min-height:110px;resize:vertical}
+.primary{background:var(--green);color:#fff;border:0;border-radius:10px;padding:11px 15px;font-weight:800}.secondary{background:#eef1ec;border:0;border-radius:10px;padding:10px 13px}.editBtn{background:#d6aa35;color:#172019;border:0;border-radius:9px;padding:7px 10px;font-weight:800}.danger{background:none;border:0;color:#a33;padding:7px 0}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.statebtn{width:100%;background:white;border:1px solid var(--line);border-radius:11px;padding:11px;text-align:left}.statebtn.fished{background:#e0eadb;border-color:#9bb48d}
+.entry{border-top:1px solid #ddd;padding:13px 0}.entry:first-child{border-top:0}.entryTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.pill{display:inline-block;background:#e8eee8;border-radius:20px;padding:4px 8px;font-size:11px}.small{font-size:12px;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:22px}.hidden{display:none}.success{background:#e5f0e8;padding:10px;border-radius:10px;margin-top:10px}.warning{background:#f8e9e9;padding:10px;border-radius:10px;margin-top:10px}.actions{display:flex;gap:12px;align-items:center;margin-top:7px}
+.tableWrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 7px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}th{font-size:11px;color:#4f5d56;text-transform:uppercase;letter-spacing:.3px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}.stats{grid-template-columns:repeat(4,1fr)}#map{height:390px}}
+
+/* Keep the sticky app banner above the entire Leaflet map on iPhone/Safari */
+header{
+  position:sticky !important;
+  top:0 !important;
+  z-index:2147483647 !important;
+  isolation:isolate;
+}
+main{
+  position:relative;
+  z-index:0;
+}
+#map{
+  position:relative;
+  z-index:0 !important;
+  isolation:isolate;
+}
+.leaflet-container{
+  z-index:0 !important;
+}
+.leaflet-control-container{
+  position:relative;
+  z-index:1 !important;
+}
+
+
+.summary-icon{
+  display:inline-block;
+  font-size:15px;
+  line-height:1;
+  vertical-align:-1px;
+  margin-right:3px;
+}
+
+
+header nav .tab{
+  font-size:11px;
+  line-height:1.1;
+  padding-left:7px;
+  padding-right:7px;
+  white-space:normal;
+}
+
+
+/* v23 refinements */
+header nav .tab{
+  background:#6f9f43 !important;
+  color:#fff !important;
+  border:1px solid rgba(255,255,255,.28) !important;
+  border-radius:10px !important;
+  box-shadow:0 2px 7px rgba(0,0,0,.16) !important;
+  margin:2px 2px 5px !important;
+  min-height:34px !important;
+  padding:5px 7px !important;
+  font-weight:750 !important;
+}
+header nav .tab.active{
+  background:#d6aa35 !important;
+  color:#173026 !important;
+  border-color:#ebce78 !important;
+}
+header nav{
+  gap:2px !important;
+  padding-top:1px !important;
+  padding-bottom:2px !important;
+}
+
+/* Compress top summary vertically */
+#home > .card:first-of-type{
+  padding:5px 7px !important;
+  margin-top:5px !important;
+  margin-bottom:6px !important;
+}
+#home > .card:first-of-type .stats{
+  gap:4px !important;
+}
+#home > .card:first-of-type .stat{
+  padding:3px 2px 4px !important;
+  min-height:0 !important;
+}
+#home > .card:first-of-type .num{
+  font-size:18px !important;
+  line-height:1 !important;
+  margin:0 !important;
+}
+#home > .card:first-of-type .label{
+  font-size:8.5px !important;
+  line-height:1.05 !important;
+  margin-top:2px !important;
+}
+#home > .card:first-of-type .summary-icon{
+  font-size:11px !important;
+  margin-right:1px !important;
+}
+
+/* Tighten map card header/margins to keep map fully in first viewport */
+#home > .card:nth-of-type(2){
+  padding:7px !important;
+  margin-top:0 !important;
+}
+#home > .card:nth-of-type(2) .row{
+  margin-bottom:3px !important;
+}
+#home > .card:nth-of-type(2) h2{
+  margin:0 !important;
+  font-size:15px !important;
+  line-height:1.05 !important;
+}
+#home > .card:nth-of-type(2) .small{
+  font-size:9px !important;
+}
+#home #map{
+  height:255px !important;
+}
+#home .legend{
+  margin-top:4px !important;
+  margin-bottom:0 !important;
+  gap:4px 8px !important;
+}
+#home .legend span{
+  font-size:8.5px !important;
+}
+#appVersion{display:none !important}
+
+@media(min-width:700px){
+  #home #map{height:390px !important;}
+}
+
+
+/* v23: larger but more compressed top summary */
+#home > .card:first-of-type{
+  padding:4px 6px !important;
+  margin-top:4px !important;
+  margin-bottom:5px !important;
+}
+#home > .card:first-of-type .stats{
+  gap:3px !important;
+}
+#home > .card:first-of-type .stat{
+  padding:2px 1px 3px !important;
+}
+#home > .card:first-of-type .num{
+  font-size:22px !important;
+  line-height:.95 !important;
+  font-weight:850 !important;
+}
+#home > .card:first-of-type .label{
+  font-size:8px !important;
+  line-height:1 !important;
+  margin-top:2px !important;
+  white-space:nowrap;
+}
+#home > .card:first-of-type .summary-icon{
+  font-size:11px !important;
+  margin-right:1px !important;
+}
+
+/* v23: state log summary strip */
+#stateDetail .state-detail-card{
+  padding:10px !important;
+}
+#stateDetail .detail-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:7px;
+}
+#stateDetail .detail-head h2{
+  margin:0;
+  font-size:20px;
+}
+#stateDetail #back{
+  padding:7px 9px;
+  font-size:11px;
+}
+#stateDetail #stateSummary{
+  margin:7px 0 9px;
+}
+#stateDetail #stateSummary .stats{
+  gap:5px;
+}
+#stateDetail #stateSummary .stat{
+  padding:6px 3px;
+  border-radius:10px;
+}
+#stateDetail #stateSummary .num{
+  font-size:19px;
+  line-height:1;
+}
+#stateDetail #stateSummary .label{
+  font-size:8.5px;
+  line-height:1.05;
+}
+#stateDetail .days-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:7px 1px 6px;
+}
+#stateDetail .days-title h3{
+  margin:0;
+  font-size:15px;
+}
+.state-day-list{
+  display:grid;
+  gap:7px;
+}
+.state-day-card{
+  background:#fff;
+  border:1px solid #dde3de;
+  border-left:4px solid #6f9f43;
+  border-radius:12px;
+  padding:8px 9px;
+  box-shadow:0 2px 7px rgba(13,42,32,.06);
+}
+.state-day-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:8px;
+  margin-bottom:6px;
+}
+.state-day-date{
+  font-weight:800;
+  color:#153b2b;
+  font-size:13px;
+}
+.state-day-fish{
+  background:#edf4e7;
+  color:#234c31;
+  border-radius:999px;
+  padding:4px 7px;
+  font-weight:800;
+  font-size:11px;
+  white-space:nowrap;
+}
+.state-day-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px 8px;
+}
+.state-day-item{
+  min-width:0;
+}
+.state-day-item .k{
+  display:block;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:#7a847e;
+  margin-bottom:1px;
+}
+.state-day-item .v{
+  display:block;
+  font-size:11px;
+  font-weight:650;
+  color:#24372e;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.state-day-notes{
+  grid-column:1/-1;
+  border-top:1px solid #edf0ed;
+  padding-top:5px;
+  margin-top:1px;
+}
+.state-day-notes .v{
+  white-space:normal;
+  line-height:1.25;
+  font-weight:500;
+}
+.state-day-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:5px;
+  margin-top:7px;
+}
+.state-day-actions button{
+  min-width:58px;
+  padding:5px 8px !important;
+  font-size:10px !important;
+  border-radius:8px !important;
+}
+#stateDetail #addStateDay{
+  margin-top:9px;
+  width:100%;
+}
+@media(min-width:700px){
+  .state-day-list{grid-template-columns:1fr 1fr}
+}
+
+
+/* v24: slightly larger summary typography */
+#home > .card:first-of-type .num{
+  font-size:24px !important;
+}
+#home > .card:first-of-type .label{
+  font-size:9.5px !important;
+  line-height:1.05 !important;
+}
+#home > .card:first-of-type .summary-icon{
+  font-size:12px !important;
+}
+
+
+/* v25: larger navigation/readability + compact visual selected-state box */
+header nav .tab{
+  font-size:13px !important;
+  line-height:1.08 !important;
+  font-weight:800 !important;
+}
+#home > .card:first-of-type .label{
+  font-size:11px !important;
+  line-height:1.05 !important;
+  font-weight:750 !important;
+}
+#home > .card:first-of-type .summary-icon{
+  font-size:13px !important;
+}
+
+/* Smaller, more visual state summary shown after tapping a state */
+#mapPanel .stateQuick{
+  padding:8px 9px !important;
+  border-radius:12px !important;
+}
+#mapPanel .stateQuick .title{
+  font-size:17px !important;
+  line-height:1 !important;
+  margin-bottom:5px !important;
+}
+#mapPanel .quickStats{
+  gap:4px !important;
+  margin:4px 0 !important;
+}
+#mapPanel .quickStat{
+  padding:5px 3px !important;
+  border-radius:9px !important;
+  background:rgba(255,255,255,.10) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+}
+#mapPanel .quickStat b{
+  font-size:16px !important;
+  line-height:1 !important;
+}
+#mapPanel .quickStat span{
+  font-size:8px !important;
+  line-height:1.05 !important;
+}
+#mapPanel .stateQuick .small{
+  font-size:9px !important;
+  line-height:1.1 !important;
+}
+#mapPanel .stateQuick br{
+  display:none !important;
+}
+#mapPanel .stateQuick .goldBtn{
+  margin-top:6px !important;
+  padding:6px 9px !important;
+  font-size:10px !important;
+  border-radius:8px !important;
+}
+
+
+/* v26 — larger top summary cards */
+#home > .card:first-of-type{
+  padding:5px 6px !important;
+}
+#home > .card:first-of-type .stats{
+  gap:5px !important;
+}
+#home > .card:first-of-type .stat{
+  padding:6px 3px !important;
+  border-radius:11px !important;
+  min-height:48px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+}
+#home > .card:first-of-type .num{
+  font-size:28px !important;
+  line-height:.95 !important;
+  font-weight:900 !important;
+}
+#home > .card:first-of-type .label{
+  font-size:11.5px !important;
+  line-height:1.05 !important;
+  font-weight:800 !important;
+  margin-top:3px !important;
+}
+#home > .card:first-of-type .summary-icon{
+  font-size:14px !important;
+}
+
+/* v26 — selected state: genuinely smaller visual panel */
+#mapPanel .stateQuick{
+  width:min(92%,340px) !important;
+  margin:6px auto !important;
+  padding:7px 8px !important;
+  border-radius:12px !important;
+  box-sizing:border-box !important;
+}
+#mapPanel .stateQuick .title{
+  font-size:16px !important;
+  margin:0 0 5px !important;
+  text-align:center !important;
+}
+#mapPanel .quickStats{
+  display:grid !important;
+  grid-template-columns:repeat(3,1fr) !important;
+  gap:4px !important;
+  margin:0 0 5px !important;
+}
+#mapPanel .quickStat{
+  min-width:0 !important;
+  padding:5px 2px !important;
+  border-radius:9px !important;
+  background:rgba(255,255,255,.12) !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  text-align:center !important;
+}
+#mapPanel .quickStat b{
+  display:block !important;
+  font-size:16px !important;
+  line-height:1 !important;
+  margin-bottom:3px !important;
+}
+#mapPanel .quickStat span{
+  display:block !important;
+  font-size:8px !important;
+  line-height:1.05 !important;
+  font-weight:700 !important;
+}
+#mapPanel .stateQuick .small{
+  text-align:center !important;
+  display:block !important;
+  font-size:8.5px !important;
+  margin:2px 0 0 !important;
+}
+#mapPanel .stateQuick .goldBtn{
+  display:block !important;
+  margin:5px auto 0 !important;
+  padding:5px 9px !important;
+  font-size:9.5px !important;
+}
+
+
+/* v27 — larger type in individual state fishing-day cards */
+.state-day-date{
+  font-size:15px !important;
+}
+.state-day-fish{
+  font-size:12.5px !important;
+}
+.state-day-item .k{
+  font-size:9.5px !important;
+}
+.state-day-item .v{
+  font-size:13px !important;
+}
+.state-day-actions button{
+  font-size:11.5px !important;
+}
+
+
+/* v28 revised — larger, better-spaced selected-state summary box */
+#mapPanel .stateQuick{
+  width:min(96%,380px) !important;
+  margin:8px auto !important;
+  padding:11px 12px !important;
+  border-radius:14px !important;
+}
+#mapPanel .stateQuick .title{
+  font-size:18px !important;
+  margin-bottom:8px !important;
+}
+#mapPanel .quickStats{
+  gap:7px !important;
+  margin-bottom:7px !important;
+}
+#mapPanel .quickStat{
+  padding:8px 5px !important;
+  border-radius:10px !important;
+}
+#mapPanel .quickStat b{
+  font-size:18px !important;
+  margin-bottom:4px !important;
+}
+#mapPanel .quickStat span{
+  font-size:9px !important;
+  line-height:1.1 !important;
+}
+#mapPanel .stateQuick .small{
+  font-size:9.5px !important;
+  margin-top:3px !important;
+}
+#mapPanel .stateQuick .goldBtn{
+  margin-top:8px !important;
+  padding:7px 11px !important;
+  font-size:10.5px !important;
+}
+
+
+/* v30 — near-original Log a Fishing Day spacing */
+#add form textarea{
+  min-height:82px !important;
+  height:82px !important;
+}
+#add #saveEntryBtn{
+  margin-top:8px !important;
+}
+#add form .small{
+  margin-bottom:2px !important;
+}
+
+
+/* v31 — slight additional tightening of Log a Fishing Day */
+#add form textarea{
+  min-height:72px !important;
+  height:72px !important;
+}
+#add form label{
+  margin-top:6px !important;
+  margin-bottom:2px !important;
+}
+#add #saveEntryBtn{
+  margin-top:6px !important;
+}
+
+
+/* v32 — map interaction controls */
+.map-tools{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin:5px 1px 3px;
+  flex-wrap:wrap;
+}
+.map-recenter{
+  border:1px solid #b7c2ba;
+  background:#f5f7f4;
+  color:#244233;
+  border-radius:8px;
+  padding:5px 8px;
+  font-size:10px;
+  font-weight:750;
+}
+.map-zoom-hint{
+  font-size:9px;
+  line-height:1.15;
+  color:#66736c;
+  font-weight:650;
+}
+.leaflet-control-zoom a{
+  width:34px !important;
+  height:34px !important;
+  line-height:34px !important;
+  font-size:21px !important;
+  font-weight:700 !important;
+}
+
+
+/* v33 — clearer map legend + matching recenter button */
+.map-recenter{
+  background:#6f9f43 !important;
+  color:#fff !important;
+  border:1px solid rgba(255,255,255,.28) !important;
+  box-shadow:0 2px 7px rgba(0,0,0,.14) !important;
+  font-size:11px !important;
+  font-weight:800 !important;
+}
+#home .legend{
+  gap:7px 12px !important;
+  margin-top:6px !important;
+}
+#home .legend span{
+  font-size:10.5px !important;
+  line-height:1.15 !important;
+  font-weight:700 !important;
+}
+#home .legend .swatch{
+  width:11px !important;
+  height:11px !important;
+  margin-right:4px !important;
+}
+
+
+/* v34 — simplified legend + larger pinch zoom hint */
+.map-zoom-hint{
+  font-size:11px !important;
+  line-height:1.2 !important;
+  font-weight:700 !important;
+}
+
+
+/* v35 — header logo, top summary icons, selected state emphasis */
+.summary-icon{
+  font-size:15px !important;
+  vertical-align:-1px;
+  margin-right:2px;
+}
+
+
+/* v37 — miniature U.S. map icon for States Fished */
+.us-map-icon{
+  display:inline-flex !important;
+  width:18px;
+  height:13px;
+  align-items:center;
+  justify-content:center;
+  vertical-align:-2px;
+  margin-right:3px;
+}
+.us-map-icon svg{
+  width:18px;
+  height:13px;
+  display:block;
+}
+.us-map-icon path{
+  fill:#3f6f50;
+}
+
+
+/* v39 — app footer */
+.app-footer{
+  max-width:1020px;
+  margin:2px auto 14px;
+  padding:8px 14px 12px;
+  text-align:center;
+  color:#6b756f;
+  font-size:10.5px;
+  font-weight:650;
+  line-height:1.35;
+}
+.app-footer .footer-version{
+  margin-top:2px;
+  font-size:9.5px;
+  opacity:.78;
+}
+
+
+/* v46 — Dad's Apps footer icon */
+.dads-apps-footer-icon{
+  width:42px;
+  height:42px;
+  display:block;
+  margin:0 auto 5px;
+  border-radius:10px;
+}
+
+
+/* v46 — Dad's Apps footer on every app page */
+.page-footer{
+  text-align:center;
+  color:#6b756f;
+  font-size:10.5px;
+  font-weight:650;
+  line-height:1.35;
+  padding:12px 6px 4px;
+  margin-top:10px;
+}
+.page-footer .footer-version{
+  margin-top:2px;
+  font-size:9.5px;
+  opacity:.78;
+}
+.dads-apps-footer-icon{
+  width:46px !important;
+  height:46px !important;
+  display:block !important;
+  margin:0 auto 5px !important;
+  border-radius:11px !important;
+}
+
+
+/* v46 — reliable external image assets */
+.dads-apps-footer-icon{
+  width:46px !important;
+  height:46px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  display:block !important;
+  margin:0 auto 5px !important;
+  border-radius:10px !important;
+}
+
+
+/* v46 — slightly larger Dad's Apps footer icon */
+.dads-apps-footer-icon{
+  width:56px !important;
+  height:56px !important;
+}
+
+</style>
+
+<meta name="apple-mobile-web-app-title" content="My Fishing States">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=45">
+<link rel="icon" type="image/png" sizes="96x96" href="./favicon.png?v=45">
+<link rel="manifest" href="./manifest.webmanifest?v=45">
+
+</head>
+
+<body>
+<header>
+<div class="brand">
+<img src="./app-logo.png?v=45" alt="My Fishing States logo" style="width:56px;height:56px;border-radius:12px;display:block;flex:none">
+<div><div class="brandTitle">MY FISHING STATES</div><div class="brandSub">Your personal fishing journal</div></div>
+</div>
+<nav>
+<button class="tab active" data-page="home">Map</button>
+<button class="tab" data-page="log">View Catch Log</button>
+<button class="tab" data-page="add">Add Fishing Day</button>
+<button class="tab" data-page="backup">Backup Data</button>
+</nav>
+</header>
+
+<main>
+<section id="home">
+<div class="card"><div class="stats">
+<div class="stat"><div class="num" id="stateCount">0</div><div class="label"><span class="summary-icon">📍</span> States Fished</div></div>
+<div class="stat"><div class="num" id="fishCount">0</div><div class="label"><span class="summary-icon">🐠</span> Fish Caught</div></div>
+<div class="stat"><div class="num" id="ytdCount">0</div><div class="label"><span class="summary-icon">🎣</span> Fish Caught YTD</div></div>
+<div class="stat"><div class="num" id="daysYtdCount">0</div><div class="label"><span class="summary-icon">🗓️</span> Fishing Days YTD</div></div>
+</div></div>
+<div class="card">
+<div class="row"><h2>Fishing History</h2><span class="small">Tap a state</span></div>
+<div id="map"></div>
+<div class="map-tools">
+  <button type="button" id="recenterMapBtn" class="map-recenter">Recenter Map</button>
+  <span class="map-zoom-hint">Pinch with two fingers to zoom</span>
+</div>
+<div class="legend">
+
+<span><i class="swatch" style="background:#6f9f43"></i>Fished</span>
+<span><i class="swatch" style="background:#164b2e"></i>Frequently Fished</span>
+<span><i class="swatch" style="background:#d6aa35"></i>Selected State</span>
+</div>
+<div id="mapPanel"></div>
+</div>
+<div class="card"><input id="stateSearch" placeholder="Search states..."><div id="stateGrid" class="grid"></div></div>
+
+<div class="page-footer">
+  <img class="dads-apps-footer-icon" src="./dads-apps-icon.png?v=45" alt="Dad’s Apps">
+  <div>Created by Dad’s Apps</div>
+  <div class="footer-version">v46</div>
+</div>
+</section>
+
+<section id="log" class="hidden">
+<div class="card">
+<div class="row"><h2>Catch Log</h2><button class="primary" id="addLog">+ Add Day</button></div>
+<p class="small">Each entry represents one fishing day in one state.</p>
+<input id="logSearch" placeholder="Search state, water or notes..."><div id="logList"></div>
+</div>
+
+<div class="page-footer">
+  <img class="dads-apps-footer-icon" src="./dads-apps-icon.png?v=45" alt="Dad’s Apps">
+  <div>Created by Dad’s Apps</div>
+  <div class="footer-version">v46</div>
+</div>
+</section>
+
+<section id="add" class="hidden">
+<div class="card">
+<h2 id="formTitle">Log a Fishing Day</h2>
+<form id="dayForm">
+<label>State *</label><select id="state" required></select>
+<label>Date *</label><input id="date" type="date" required>
+<label>How many fish caught *</label><input id="count" type="number" min="0" step="1" required placeholder="10">
+<label>Water / location</label><input id="water" placeholder="Lake, river, stream, etc.">
+<label>Largest fish — length</label><input id="largest" type="number" min="0" step="0.1" placeholder="18.5"><div class="small">Length in inches.</div>
+<label>Notes</label><textarea id="notes" placeholder="Weather, conditions, memorable catches, lure, guide, who you fished with, etc."></textarea>
+<button class="primary" id="saveEntryBtn" type="submit">Save Fishing Day</button>
+<button class="secondary hidden" id="cancelEditBtn" type="button">Cancel Edit</button>
+</form>
+</div>
+
+<div class="page-footer">
+  <img class="dads-apps-footer-icon" src="./dads-apps-icon.png?v=45" alt="Dad’s Apps">
+  <div>Created by Dad’s Apps</div>
+  <div class="footer-version">v46</div>
+</div>
+</section>
+
+<section id="stateDetail" class="hidden">
+<div class="card state-detail-card">
+<div class="detail-head"><h2 id="detailTitle"></h2><button class="secondary" id="back">← Map</button></div>
+<div id="stateSummary"></div>
+<div class="days-title"><h3>Fishing Days</h3><span class="small" id="stateDayCount"></span></div>
+<div id="stateEntries"></div>
+<button class="primary" id="addStateDay">+ Add Fishing Day</button>
+</div>
+
+<div class="page-footer">
+  <img class="dads-apps-footer-icon" src="./dads-apps-icon.png?v=45" alt="Dad’s Apps">
+  <div>Created by Dad’s Apps</div>
+  <div class="footer-version">v46</div>
+</div>
+</section>
+
+<section id="backup" class="hidden">
+<div class="card">
+<h2>💾 Backup & Restore</h2>
+<p>Your fishing log is stored on this device. Export a backup periodically so you can restore it later.</p>
+<button class="primary" id="exportBtn">Export Backup</button>
+<br><br>
+<label>Restore Backup</label>
+<input id="restoreFile" type="file" accept=".json,application/json">
+<div id="backupStatus"></div>
+</div>
+
+<div class="page-footer">
+  <img class="dads-apps-footer-icon" src="./dads-apps-icon.png?v=45" alt="Dad’s Apps">
+  <div>Created by Dad’s Apps</div>
+  <div class="footer-version">v46</div>
+</div>
+</section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">window.addEventListener("pageshow",()=>{setTimeout(resetMapView,100);});
+
+window.addEventListener("DOMContentLoaded",()=>{
+  const home=document.getElementById("home");
+  if(home){
+    document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+    home.classList.remove("hidden");
+    document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.page==="home"));
+    setTimeout(()=>{ if(typeof resetMapView==="function") resetMapView(); },120);
+  }
+});
+
+</script>
+<script>
+const STATES=["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+let entries=[],selectedState=null,map=null,stateLayer=null,editingId=null;
+function resetMapView(){
+  if(!map)return;
+  const setDefaultView=()=>{
+    map.invalidateSize();
+    map.setView([38.6,-96.8],2.3,{animate:false});
+  };
+  requestAnimationFrame(setDefaultView);
+  setTimeout(setDefaultView,250);
+  setTimeout(setDefaultView,700);
+}
+
+try{entries=JSON.parse(localStorage.getItem("mfs_daily_entries")||"[]")}catch(e){entries=[]}
+const $=id=>document.getElementById(id),save=()=>localStorage.setItem("mfs_daily_entries",JSON.stringify(entries));
+function esc(v){return String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function show(page){if(page==="home"){setTimeout(resetMapView,50);}
+  document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+  $(page).classList.remove("hidden");
+  if(page==="add"){
+    window.scrollTo({top:0,left:0,behavior:"auto"});
+  }
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  if(page==="add")fillStates();
+  if(page==="home"&&map)setTimeout(()=>map.invalidateSize(),100);
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{cancelEdit();show(b.dataset.page)});
+$("addLog").onclick=()=>{cancelEdit();show("add")};
+$("addStateDay").onclick=()=>{cancelEdit();show("add");fillStates();$("state").value=selectedState||""};
+$("back").onclick=()=>{selectedState=null;$("mapPanel").innerHTML="";show("home");render()};
+$("cancelEditBtn").onclick=()=>{cancelEdit();show(selectedState?"stateDetail":"log");if(selectedState)viewStateLog()};
+
+function fillStates(){
+  $("state").innerHTML='<option value="">Choose a state...</option>'+STATES.map(s=>`<option>${s}</option>`).join("");
+  if(selectedState&&!editingId)$("state").value=selectedState;
+  if(!$("date").value)$("date").value=new Date().toISOString().slice(0,10);
+}
+function cancelEdit(){
+  editingId=null;
+  $("formTitle").textContent="Log a Fishing Day";
+  $("saveEntryBtn").textContent="Save Fishing Day";
+  $("cancelEditBtn").classList.add("hidden");
+  $("dayForm").reset();
+  $("date").value=new Date().toISOString().slice(0,10);
+}
+function editEntry(id){
+  const e=entries.find(x=>x.id===id);
+  if(!e)return;
+  editingId=id;
+  selectedState=e.state;
+  show("add");
+  fillStates();
+  $("formTitle").textContent="Edit Fishing Day";
+  $("saveEntryBtn").textContent="Save Changes";
+  $("cancelEditBtn").classList.remove("hidden");
+  $("state").value=e.state;
+  $("date").value=e.date||"";
+  $("count").value=e.count??0;
+  $("water").value=e.water||"";
+  $("largest").value=e.largest||"";
+  $("notes").value=e.notes||"";
+}
+function totalFish(){return entries.reduce((a,e)=>a+Number(e.count||0),0)}
+function ytdFish(){const y=new Date().getFullYear();return entries.filter(e=>e.date&&new Date(e.date+"T12:00:00").getFullYear()===y).reduce((a,e)=>a+Number(e.count||0),0)}
+function ytdFishingDays(){const y=new Date().getFullYear();return entries.filter(e=>e.date&&new Date(e.date+"T12:00:00").getFullYear()===y).length}
+function fishedStates(){return new Set(entries.map(e=>e.state))}
+function stateEntriesFor(s){return entries.filter(e=>e.state===s).sort((a,b)=>b.date.localeCompare(a.date))}
+function stateTotal(s){return stateEntriesFor(s).reduce((a,e)=>a+Number(e.count||0),0)}
+function stateLargest(s){return stateEntriesFor(s).reduce((m,e)=>Math.max(m,Number(e.largest||0)),0)}
+function stateColor(s){if(s===selectedState)return "#d6aa35";const days=stateEntriesFor(s).length;if(days>=5)return "#164b2e";if(days>0)return "#6f9f43";return "#c9cdca"}
+
+function setupMap(){
+  map=L.map("map",{zoomControl:true,scrollWheelZoom:false,attributionControl:false,zoomControl:false,zoomSnap:0.1,touchZoom:true,doubleClickZoom:true}).setView([38.6,-96.8],2.3);L.control.zoom({position:"bottomright"}).addTo(map);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{opacity:.08,maxZoom:18}).addTo(map);
+  fetch("https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json")
+    .then(r=>r.json()).then(data=>{
+      data.features=data.features.filter(f=>f.properties.name!=="Puerto Rico");
+      stateLayer=L.geoJSON(data,{
+        style:f=>({color:"#fff",weight:1.3,fillColor:stateColor(f.properties.name),fillOpacity:.92}),
+        onEachFeature:(f,l)=>{
+          l.bindTooltip(f.properties.name,{sticky:true});
+          l.on("click",(e)=>{
+            l.openTooltip(e.latlng);
+            openState(f.properties.name);
+            setTimeout(()=>{ if(l.isTooltipOpen()) l.closeTooltip(); },2000);
+          });
+        }
+      }).addTo(map);
+      try{resetMapView()}catch(e){}
+    })
+    .catch(()=>{$("map").innerHTML="<div style='padding:22px;text-align:center;color:#66736c'>The state map needs an internet connection to load.</div>"});
+}
+function refreshMap(){
+  if(stateLayer)stateLayer.eachLayer(l=>{
+    const name=l.feature.properties.name;
+    const selected=name===selectedState;
+    l.setStyle({
+      fillColor:stateColor(name),
+      color:selected?"#b88912":"#ffffff",
+      weight:selected?3:1.2,
+      fillOpacity:selected?.92:.82
+    });
+    if(selected&&l.bringToFront)l.bringToFront();
+  });
+}
+function selectStateFromList(s){
+  openState(s);
+  setTimeout(()=>{
+    window.scrollTo({top:0,left:0,behavior:"smooth"});
+  },80);
+}
+function openState(s){
+  selectedState=s;
+  const es=stateEntriesFor(s),last=es[0]?.date||"";
+  $("mapPanel").innerHTML=`<div class="stateQuick">
+  <div class="title">${esc(s)}</div>
+  <div class="quickStats">
+    <div class="quickStat"><b>${stateTotal(s)}</b><span>Fish Caught</span></div>
+    <div class="quickStat"><b>${es.length}</b><span>Fishing Days</span></div>
+    <div class="quickStat"><b>${stateLargest(s)||0}${stateLargest(s)?" in":""}</b><span>Largest Fish</span></div>
+  </div>
+  <div class="small" style="color:#d7ded9">${last?`Last fished: ${esc(last)}`:"No fishing days logged yet."}</div>
+  <button class="goldBtn" onclick="viewStateLog()">VIEW STATE LOG →</button>
+</div>`;
+  refreshMap();
+}
+function viewStateLog(){
+  if(!selectedState)return;
+  show("stateDetail");
+  $("detailTitle").textContent=selectedState;
+  const es=stateEntriesFor(selectedState);
+  $("stateDayCount").textContent=es.length+" day"+(es.length===1?"":"s");
+  $("stateSummary").innerHTML=`<div class="stats">
+    <div class="stat"><div class="num">${stateTotal(selectedState)}</div><div class="label">Fish Caught</div></div>
+    <div class="stat"><div class="num">${es.length}</div><div class="label">Fishing Days</div></div>
+    <div class="stat"><div class="num">${stateLargest(selectedState)||0}${stateLargest(selectedState)?" in":""}</div><div class="label">Largest Fish</div></div>
+  </div>`;
+  $("stateEntries").innerHTML=es.length?`<div class="state-day-list">${es.map(e=>`
+    <div class="state-day-card">
+      <div class="state-day-top">
+        <div class="state-day-date">${esc(e.date)}</div>
+        <div class="state-day-fish">${Number(e.count||0)} fish</div>
+      </div>
+      <div class="state-day-grid">
+        <div class="state-day-item"><span class="k">Water / Location</span><span class="v">${esc(e.water||"—")}</span></div>
+        <div class="state-day-item"><span class="k">Largest</span><span class="v">${e.largest?esc(e.largest)+" in":"—"}</span></div>
+        ${e.notes?`<div class="state-day-item state-day-notes"><span class="k">Notes</span><span class="v">${esc(e.notes)}</span></div>`:""}
+      </div>
+      <div class="state-day-actions">
+        <button class="editBtn" onclick="editEntry('${e.id}')">Edit</button>
+        <button class="danger" onclick="deleteEntry('${e.id}')">Delete</button>
+      </div>
+    </div>`).join("")}</div>`:"<div class='empty'>No fishing days logged yet.</div>";
+}
+function entryHTML(e){
+  return `<div class="entry"><div class="entryTop"><div><b>${esc(e.state)}</b><div class="small">${esc(e.date)}</div></div><span class="pill">${Number(e.count||0)} fish</span></div>
+  <div><b>Water:</b> ${esc(e.water||"—")}</div><div><b>Largest:</b> ${e.largest?esc(e.largest)+" in":"—"}</div>${e.notes?`<div><b>Notes:</b> ${esc(e.notes)}</div>`:""}
+  <div class="actions"><button class="editBtn" onclick="editEntry('${e.id}')">Edit</button><button class="danger" onclick="deleteEntry('${e.id}')">Delete</button></div></div>`;
+}
+function render(){
+  const f=fishedStates();
+  $("stateCount").textContent=f.size;$("fishCount").textContent=totalFish();$("ytdCount").textContent=ytdFish();$("daysYtdCount").textContent=ytdFishingDays();
+  const q=$("stateSearch").value.toLowerCase();
+  $("stateGrid").innerHTML=STATES.filter(s=>s.toLowerCase().includes(q)).map(s=>`<button class="statebtn ${f.has(s)?"fished":""}" onclick='selectStateFromList(${JSON.stringify(s)})'><b>${s}</b><br><span class="small">${stateTotal(s)} fish • ${stateEntriesFor(s).length} days${stateLargest(s)?` • ${stateLargest(s)} in max`:""}</span></button>`).join("");
+  const lq=$("logSearch").value.toLowerCase();
+  const es=entries.filter(e=>(e.state+" "+(e.water||"")+" "+(e.notes||"")+" "+e.date).toLowerCase().includes(lq)).sort((a,b)=>b.date.localeCompare(a.date));
+  $("logList").innerHTML=es.length?es.map(entryHTML).join(""):"<div class='empty'>No fishing days logged yet.</div>";
+  refreshMap();
+}
+$("stateSearch").oninput=render;$("logSearch").oninput=render;
+$("dayForm").onsubmit=e=>{
+  e.preventDefault();
+  const x={id:editingId||String(Date.now()+Math.random()),state:$("state").value,date:$("date").value,count:Number($("count").value||0),water:$("water").value.trim(),largest:Number($("largest").value||0),notes:$("notes").value.trim()};
+  if(!x.state||!x.date)return;
+  if(editingId){
+    const i=entries.findIndex(e=>e.id===editingId);
+    if(i>=0)entries[i]=x;
+  }else{
+    entries.push(x);
+  }
+  save();
+  selectedState=x.state;
+  cancelEdit();
+  viewStateLog();
+  render();
+};
+function deleteEntry(id){
+  if(!confirm("Delete this fishing day?"))return;
+  entries=entries.filter(e=>e.id!==id);save();
+  if(selectedState)viewStateLog();
+  render();
+}
+$("exportBtn").onclick=()=>{
+  const data={app:"My Fishing States",version:6,exported:new Date().toISOString(),entries};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="my-fishing-states-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  $("backupStatus").innerHTML="<div class='success'>Backup created. Save the file somewhere safe.</div>";
+};
+$("restoreFile").onchange=e=>{
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);if(!Array.isArray(d.entries))throw new Error("invalid");
+    if(!confirm("Restore this backup? This will replace the current fishing log."))return;
+    entries=d.entries;save();selectedState=null;$("mapPanel").innerHTML="";render();$("backupStatus").innerHTML="<div class='success'>Backup restored successfully.</div>";
+  }catch(err){$("backupStatus").innerHTML="<div class='warning'>That file is not a valid My Fishing States backup.</div>"}};
+  r.readAsText(file);
+};
+fillStates();$("recenterMapBtn").addEventListener("click",()=>{
+  resetMapView();
+});
+setupMap();render();
+</script>
+</body>
+</html>
